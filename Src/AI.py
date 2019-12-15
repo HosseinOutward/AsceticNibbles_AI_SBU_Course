@@ -11,7 +11,7 @@ class AI_RBFS_S:
     currentScore=0
     def run(self, ID, game):
         self.currentScore=game.maxFoodScore
-        result = self.RBFS(ID, game, 0, 100000)
+        result = self.RBFS(ID, game, 0, 100000)a
         return result[1]
 
     def RBFS(self, ID, gme, fTillNow, f_limit):  # returns [success, action, f_reached]
