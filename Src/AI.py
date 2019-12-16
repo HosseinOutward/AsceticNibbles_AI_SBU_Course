@@ -8,14 +8,16 @@ def heuristic(ID, game):
 
 
 class AI_RBFS_S:
+    winScore = 500
     currentScore=0
+
     def run(self, ID, game):
         self.currentScore=game.maxFoodScore
         result = self.RBFS(ID, game, 0, 100000)
         return result[1]
 
     def RBFS(self, ID, gme, fTillNow, f_limit):  # returns [success, action, f_reached]
-        game = Simulator.Game(1, 1, 1, 1, [])
+        game = Simulator.Arena(1, 1, 1, 1, [])
         game.copyAllG(gme)
         snake = game.players[ID]
 
@@ -55,8 +57,7 @@ class AI_RBFS_S:
                 return [True, best[1], best[2]]
 
     def nextState(self, ID, action, gme):
-        game = Simulator.Game(1, 1, 1, 1, [])
-        game.copyAllG(gme)
+        game = Simulator.Arena(copy=gme)
         if game.nextTurn(ID, action) != 'd':
             return [game, action, 0]
         else:
@@ -66,17 +67,23 @@ class AI_RBFS_S:
 
 
 class AI_IDS:
+    winScore = 500
+
     def run(self, ID, gme):
-        game = Simulator.Game(1, 1, 1, 1, [])
-        game.copyAllG(gme)
+        game = Simulator.Arena(copy=gme)
+        self.winScore=game.winScore
         depth=1
         while True:
             result=self.DLS(ID, game, depth)
             if result[0]:
                 return result[1]
+            depth+=1
 
     def DLS(self, ID, game, limit):  # returns [success, action]
-        if game.maxFoodScore>=500:
+        if limit == 0:
+            return [False, -1]
+
+        if game.maxFoodScore >= self.winScore:
             return [True, -1]
 
         r = list(range(0,4))
@@ -91,8 +98,7 @@ class AI_IDS:
         return[False, -1]
 
     def nextState(self, ID, action, gme):
-        game = Simulator.Game(1, 1, 1, 1, [])
-        game.copyAllG(gme)
+        game = Simulator.Arena(copy=gme)
         if game.nextTurn(ID, action) != 'd':
             return game
         else:
@@ -100,8 +106,10 @@ class AI_IDS:
 
 
 class AI_A_Star:
+    winScore = 500
+
     def run(self, ID, gme):
-        game = Simulator.Game(1, 1, 1, 1, [])
+        game = Simulator.Arena(1, 1, 1, 1, [])
         game.copyAllG(gme)
         result=self.A_Star(ID, [game,0,0,0,0])
         return result[1]
@@ -126,7 +134,7 @@ class AI_A_Star:
                 n[1]=q
 
             for n in nextNodes:
-                if n[0].maxFoodScore>=500:
+                if n[0].maxFoodScore>=self.winScore:
                     n[2]=q[2]+1
                     n[3]=heuristic(ID,n[0])
                     n[4]=n[2]+n[3]
@@ -136,8 +144,7 @@ class AI_A_Star:
             closedList.append(q)
 
     def nextState(self, ID, action, gme): # [game, parent, g, h, f]
-        game = Simulator.Game(1, 1, 1, 1, [])
-        game.copyAllG(gme)
+        game = Simulator.Arena(copy=gme)
         if game.nextTurn(ID, action) != 'd':
             return [game,0,0,0,0]
         else:

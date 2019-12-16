@@ -1,19 +1,35 @@
 import copy
-import numpy.random as npR
 import random
 
-class Game:
-    players, fScoreMulti, maxFoodScore, foodGrid, consume = [], 0, 0, 0, 0
+class Arena:
+    players, foodAddScore, fScoreMulti, maxFoodScore, foodGrid, consume, winScore, turnCost, currentDir = [], 0, 0, 0, 0, 0, 0, 0, 0
 
-    def __init__(self, width, height, mode, fScoMul, names):
-        self.consume, self.fScoreMulti, self.foodGrid = mode, fScoMul, npR.randint(9, size=(width, height))+1
+    def __init__(self, *args, copy=None):
+        if copy is None:
+            self.firstInit(*args)
+        else:
+            self.copyInit(copy)
+
+    def firstInit(self, width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types):
+        self.consume, self.turnCost, self.foodAddScore, self.fScoreMulti, self.winScore = consumeMode, trnCost, fScoreAdd, fScoMul, winScr
+        self.foodGrid = [[random.randint(1,9) for j in range(height)] for i in range(width)]
         # need balancing for duo
-        i = 1
-        for name in names:
-            self.players.append(Snake(name, width, height, i, self.players))
-            i+=1
+        for i in range(len(names)):
+            self.players.append(Snake(names[i], types[i], width, height, i+1, self.players))
         for snake in self.players:
-            self.eat(snake)
+            self.eat(snake, -1)
+
+    def copyInit(self, gameToCopy):
+        self.players = []
+        for snake in gameToCopy.players:
+            self.players.append(Snake(copy=snake))
+        self.foodGrid = [[a for a in collumn] for collumn in gameToCopy.foodGrid]
+        self.foodAddScore = gameToCopy.foodAddScore
+        self.winScore = gameToCopy.winScore
+        self.turnCost = gameToCopy.turnCost
+        self.maxFoodScore = gameToCopy.maxFoodScore
+        self.consume = gameToCopy.consume
+        self.fScoreMulti = gameToCopy.fScoreMulti
 
     def nextTurn(self, ID, action):
         snake = self.players[ID]
@@ -22,14 +38,17 @@ class Game:
             self.kill(snake)
             return 'd'
         else:
-            self.eat(snake)
-        if self.maxFoodScore >= 500:
+            self.eat(snake, action)
+            self.currentDir = action
+        if self.maxFoodScore >= self.winScore:
             return True
         return False
 
-    def eat(self, snake):
+    def eat(self, snake, action):
         if snake.shekam + len(snake.body) == 1:
             snake.foodScore += 1 + self.fScoreMulti * self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]
+            if self.currentDir == action:
+                snake.foodScore-=self.turnCost
             snake.shekam += self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]
             if snake.foodScore > self.maxFoodScore:
                 self.maxFoodScore = snake.foodScore
@@ -55,30 +74,34 @@ class Game:
     def kill(self, snake):
         self.players.remove(snake)
 
-    def copyAllG(self, gme):
-        temp = []
-        for snake in gme.players:
-            temp.append(Snake(1,1,1,1,[]))
-            temp[-1].copyAllS(snake)
-        self.players = temp
-        self.foodGrid = copy.deepcopy(gme.foodGrid)
-        self.maxFoodScore = copy.deepcopy(gme.maxFoodScore)
-        self.consume = copy.deepcopy(gme.consume)
-        self.fScoreMulti = copy.deepcopy(gme.fScoreMulti)
-
 # ...
 class Snake:
-    shekam, body, color, name, foodScore, realScore = 0, 0, 0, 0, 0, 0
+    shekam, body, color, name, foodScore, realScore, type = 0, 0, 0, 0, 0, 0, 0
+    
+    def __init__(self, *args, copy=None):
+        if copy is None:
+            self.firstInit(*args)
+        else:
+            self.copyInit(copy)
 
-    def __init__(self, name, width, height, colorNum, playersList):
-        self.name, self.color = name, self.randColor(colorNum)
-        same = True
-        while same:
-            same, tempBody = False, [(random.randint(0, width-1), random.randint(0, height-1))]
+    def firstInit(self, name, type, width, height, colorNum, playersList):
+        self.name, self.color, self.type = name, self.randColor(colorNum), type
+        diffrent = True
+        while diffrent:
+            diffrent, tempBody = False, [(random.randint(0, width-1), random.randint(0, height-1))]
             for snake in playersList:
                 if tempBody is snake.body:
-                    same = True
+                    diffrent = True
         self.body = tempBody
+
+    def copyInit(self, snakeToCopy):
+        self.shekam = snakeToCopy.shekam
+        self.body = [[a for a in part] for part in snakeToCopy.body]
+        self.color = snakeToCopy.color
+        self.name = snakeToCopy.name
+        self.foodScore = snakeToCopy.foodScore
+        self.realScore = snakeToCopy.realScore
+        self.type = snakeToCopy.type
 
     def move(self, dir):  # down=0, left=1, up=2, right=3
         if dir == 0:
@@ -118,11 +141,3 @@ class Snake:
             b = int(b) % 256
             ret = (r, g, b)
         return ret
-
-    def copyAllS(self, snake):
-        self.shekam = copy.deepcopy(snake.shekam)
-        self.body = copy.deepcopy(snake.body)
-        self.color = copy.deepcopy(snake.color)
-        self.name = copy.deepcopy(snake.name)
-        self.foodScore = copy.deepcopy(snake.foodScore)
-        self.realScore = copy.deepcopy(snake.realScore)
