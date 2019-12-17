@@ -1,7 +1,6 @@
 import copy
 import random
 
-
 class Arena:
     players, foodAddScore, fScoreMulti, maxFoodScore, foodGrid, consume, winScore, turnCost = [], 0, 0, 0, 0, 0, 0, 0
 
@@ -13,10 +12,10 @@ class Arena:
 
     def firstInit(self, width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types):
         self.consume, self.turnCost, self.foodAddScore, self.fScoreMulti, self.winScore = consumeMode, trnCost, fScoreAdd, fScoMul, winScr
-        self.foodGrid = [[random.randint(1, 9) for j in range(height)] for i in range(width)]
+        self.foodGrid = [[random.randint(1,9) for j in range(height)] for i in range(width)]
         # need balancing for duo
         for i in range(len(names)):
-            self.players.append(Snake(names[i], types[i], width, height, i + 1, self.players))
+            self.players.append(Snake(names[i], types[i], width, height, i+1, self.players))
         for snake in self.players:
             self.eat(snake, -1)
 
@@ -41,7 +40,7 @@ class Arena:
         else:
             self.eat(snake, action)
             if snake.currentDir != action:
-                snake.foodScore -= self.turnCost
+                snake.foodScore-=self.turnCost
             snake.currentDir = action
         if self.maxFoodScore >= self.winScore:
             return True
@@ -61,7 +60,7 @@ class Arena:
         if pos[0] == width or pos[1] == height or pos[0] == -1 or pos[1] == -1:
             return True
 
-        i = 0
+        i=0
         for OtherSnake in self.players:
             for part in OtherSnake.body:
                 if pos[0] == part[0] and pos[1] == part[1]:
@@ -75,11 +74,10 @@ class Arena:
     def kill(self, snake):
         self.players.remove(snake)
 
-
 # ...
 class Snake:
     shekam, body, color, name, foodScore, realScore, type, currentDir = 0, 0, 0, 0, 0, 0, 0, -1
-
+    
     def __init__(self, *args, copy=None):
         if copy is None:
             self.firstInit(*args)
@@ -90,7 +88,7 @@ class Snake:
         self.name, self.color, self.type = name, self.randColor(colorNum), type
         diffrent = True
         while diffrent:
-            diffrent, tempBody = False, [(random.randint(0, width - 1), random.randint(0, height - 1))]
+            diffrent, tempBody = False, [(random.randint(0, width-1), random.randint(0, height-1))]
             for snake in playersList:
                 if tempBody is snake.body:
                     diffrent = True
@@ -107,13 +105,13 @@ class Snake:
 
     def move(self, dir):  # down=0, left=1, up=2, right=3
         if dir == 0:
-            self.body.append((self.headPos()[0], self.headPos()[1] + 1))
+            self.body.append((self.headPos()[0], self.headPos()[1]+1))
         elif dir == 1:
-            self.body.append((self.headPos()[0] - 1, self.headPos()[1]))
+            self.body.append((self.headPos()[0]-1, self.headPos()[1]))
         elif dir == 2:
-            self.body.append((self.headPos()[0], self.headPos()[1] - 1))
+            self.body.append((self.headPos()[0], self.headPos()[1]-1))
         elif dir == 3:
-            self.body.append((self.headPos()[0] + 1, self.headPos()[1]))
+            self.body.append((self.headPos()[0]+1, self.headPos()[1]))
 
         if self.shekam == 0:
             del self.body[0]
@@ -124,14 +122,15 @@ class Snake:
 
         self.realScore += 1
 
+
     def headPos(self):
-        return self.body[-1]
+       return self.body[-1]
 
     def randColor(self, n):
         ret = 0
-        r = int(random.random() * 220) + 30
+        r = int(random.random() * 220)+30
         g = int(random.random() * 150)
-        b = int(random.random() * 200) + 30
+        b = int(random.random() * 200)+30
         step = 256 / n
         for i in range(n):
             r += step
