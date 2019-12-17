@@ -22,7 +22,6 @@ def askForAction(x, playerID, arena, gui):
     if x == "IDS":
         return AI.AI_IDS().run(playerID, arena)
     if x == "RBFS":
-        print("this works, but it takes some time to act")
         return AI.AI_RBFS_S().run(playerID, arena)
     #if x == "A_STAR":
     #    return AI.AI_A_Star().run(playerID, arena)
@@ -57,7 +56,7 @@ def getInit2():
 
 
 def main():
-    width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types, cubeSize = 10, 5, True, 0.25, 5, 2, 25, ["alex"], ["IDS"], 30
+    width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types, cubeSize = 10, 5, True, 0.25, 5, 2, 25, ["alex"], ["RBFS"], 30
     arena = Simulator.Arena(width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types)
     gui = GUI.Graphics(width, height, cubeSize, arena)
     #getinit()
@@ -72,6 +71,7 @@ def main():
             if winner == 'd':
                 winner = False
             gui.redrawPage(arena)  # io
+            gui.drawText("your score is " + str(snake.foodScore), snake.color, 500)  # io
             if winner:
                 break
             playerID += 1

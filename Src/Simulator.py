@@ -2,7 +2,7 @@ import copy
 import random
 
 class Arena:
-    players, foodAddScore, fScoreMulti, maxFoodScore, foodGrid, consume, winScore, turnCost, currentDir = [], 0, 0, 0, 0, 0, 0, 0, 0
+    players, foodAddScore, fScoreMulti, maxFoodScore, foodGrid, consume, winScore, turnCost = [], 0, 0, 0, 0, 0, 0, 0
 
     def __init__(self, *args, copy=None):
         if copy is None:
@@ -39,7 +39,9 @@ class Arena:
             return 'd'
         else:
             self.eat(snake, action)
-            self.currentDir = action
+            if snake.currentDir != action:
+                snake.foodScore-=self.turnCost
+            snake.currentDir = action
         if self.maxFoodScore >= self.winScore:
             return True
         return False
@@ -47,8 +49,6 @@ class Arena:
     def eat(self, snake, action):
         if snake.shekam + len(snake.body) == 1:
             snake.foodScore += 1 + self.fScoreMulti * self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]
-            if self.currentDir == action:
-                snake.foodScore-=self.turnCost
             snake.shekam += self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]
             if snake.foodScore > self.maxFoodScore:
                 self.maxFoodScore = snake.foodScore
@@ -76,7 +76,7 @@ class Arena:
 
 # ...
 class Snake:
-    shekam, body, color, name, foodScore, realScore, type = 0, 0, 0, 0, 0, 0, 0
+    shekam, body, color, name, foodScore, realScore, type, currentDir = 0, 0, 0, 0, 0, 0, 0, -1
     
     def __init__(self, *args, copy=None):
         if copy is None:
