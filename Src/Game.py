@@ -1,17 +1,5 @@
 from Src import GUI, Simulator, AI
 
-
-class IO:
-    def __init__(self):
-        a=0
-
-    def send(self, game):
-        return game
-
-    def get(self):
-        return input()
-
-
 def getInit():
     fScoreMulti = int(input("fScoreMulti "))
     width = int(input("width "))
@@ -34,32 +22,56 @@ def askForAction(x, playerID, arena, gui):
     if x == "IDS":
         return AI.AI_IDS().run(playerID, arena)
     if x == "RBFS":
-        print("this works, but it takes some time to act")
         return AI.AI_RBFS_S().run(playerID, arena)
     #if x == "A_STAR":
     #    return AI.AI_A_Star().run(playerID, arena)
     if x == "HUMAN":
         return gui.getAction()
+
+def getInit2():
+    fScoreAdd =  int(input("fScoreAdd "))
+    fScoreMulti = int(input("fScoreMulti "))
+    width = int(input("Width "))
+    height = int(input("Height "))
+    consumeMode = input("Consume mode (B or A)")
+    if consumeMode != "B" or "b":
+        consumeMode = False
+    else:
+        consumeMode = True
+
+    numP = int(input("number of players "))
+    PlayerNames, PlayersType =[], []
+    for i in range(numP):
+        PlayerNames.append(str(input("name ")))
+        PlayersType.append(str(input("whats players Type of" + PlayerNames[i] + "(type EXACTLY: IDS, RBFS or Human )")).upper())
+
+    winScore = int(input("Score to Win "))
+    trnCost = float(input("Turning Penalty (ex. 0 for non, max is .7) "))
+    cubeSize = int(input("Window Size (ex. 30 for FHD)"))
+
+    arena = Simulator.Arena(width, height, consumeMode, trnCost, fScoreAdd, fScoreMulti, winScore, PlayerNames, PlayersType)
+    gui = GUI.Graphics(width, height, cubeSize, arena)
+    return arena, gui
 # ..................................................................
 
 
 def main():
-    width, height, mode, fScoreMulti, PlayerNames, playersType, cubeSize = getInit()
-
-    arena = Simulator.Game(width, height, mode, fScoreMulti, PlayerNames)
-
+    width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types, cubeSize = 10, 5, True, 0.25, 5, 2, 25, ["alex"], ["RBFS"], 30
+    arena = Simulator.Arena(width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types)
     gui = GUI.Graphics(width, height, cubeSize, arena)
+    #getinit()
 
     winner = False
     while not(winner or len(arena.players)==0):
         playerID = 0
         for snake in arena.players:
             gui.drawText("its " + str(snake.name) + "'s turn", snake.color, 10)  # io
-            action = int(askForAction(playersType, playerID, arena, gui))  # io
+            action = int(askForAction(snake.type, playerID, arena, gui))  # io
             winner = arena.nextTurn(playerID, action)
             if winner == 'd':
                 winner = False
             gui.redrawPage(arena)  # io
+            gui.drawText("your score is " + str(snake.foodScore), snake.color, 500)  # io
             if winner:
                 break
             playerID += 1
