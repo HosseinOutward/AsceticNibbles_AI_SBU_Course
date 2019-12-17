@@ -1,22 +1,5 @@
 from Src import GUI, Simulator, AI
 
-def getInit():
-    fScoreMulti = int(input("fScoreMulti "))
-    width = int(input("width "))
-    height = int(input("height "))
-    mode = input("mode ")
-    if mode != "B" or "b":
-        mode = False
-    else:
-        mode = True
-    numP = int(input("number of players "))
-    PlayerNames=[]
-    for i in range(numP):
-        PlayerNames.append(str(input("name ")))
-    playersType = str(input("players Type (type EXACTLY: IDS, RBFS or Human )")).upper()
-    cubeSize = int(input("Window Size "))
-    return width, height, mode, fScoreMulti, PlayerNames, playersType, cubeSize
-
 
 def askForAction(x, playerID, arena, gui):
     if x == "IDS":
@@ -28,12 +11,13 @@ def askForAction(x, playerID, arena, gui):
     if x == "HUMAN":
         return gui.getAction()
 
-def getInit2():
-    fScoreAdd =  int(input("fScoreAdd "))
-    fScoreMulti = int(input("fScoreMulti "))
+
+def getInit():
+    fScoreAdd =  int(input("fScore Add "))
+    fScoreMulti = int(input("fScore Multi "))
     width = int(input("Width "))
     height = int(input("Height "))
-    consumeMode = input("Consume mode (B or A)")
+    consumeMode = input("Consume mode (B or A) ")
     if consumeMode != "B" or "b":
         consumeMode = False
     else:
@@ -46,7 +30,7 @@ def getInit2():
         PlayersType.append(str(input("whats players Type of" + PlayerNames[i] + "(type EXACTLY: IDS, RBFS or Human )")).upper())
 
     winScore = int(input("Score to Win "))
-    trnCost = float(input("Turning Penalty (ex. 0 for non, max is .7) "))
+    trnCost = float(input("Turning Penalty "))
     cubeSize = int(input("Window Size (ex. 30 for FHD)"))
 
     arena = Simulator.Arena(width, height, consumeMode, trnCost, fScoreAdd, fScoreMulti, winScore, PlayerNames, PlayersType)
@@ -56,33 +40,32 @@ def getInit2():
 
 
 def main():
-    width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types, cubeSize = 10, 5, True, 0.25, 5, 2, 25, ["alex"], ["RBFS"], 30
-    arena = Simulator.Arena(width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types)
-    gui = GUI.Graphics(width, height, cubeSize, arena)
-    #getinit()
+    #arena = Simulator.Arena(10, 5, True, 0.5, 3, 2, 20, ["alex", "john"], ["RBFS", "IDS"])
+    #gui = GUI.Graphics(10, 5, 30, arena)
+    arena, gui = getInit()
 
     winner = False
     while not(winner or len(arena.players)==0):
         playerID = 0
         for snake in arena.players:
-            gui.drawText("its " + str(snake.name) + "'s turn", snake.color, 10)  # io
-            action = int(askForAction(snake.type, playerID, arena, gui))  # io
+            gui.drawText("its " + str(snake.name) + "'s turn", snake.color, 10)
+            action = int(askForAction(snake.type, playerID, arena, gui))
             winner = arena.nextTurn(playerID, action)
             if winner == 'd':
                 winner = False
-            gui.redrawPage(arena)  # io
-            gui.drawText("your score is " + str(snake.foodScore), snake.color, 500)  # io
+            gui.redrawPage(arena)
+            gui.drawText("your score is " + str(snake.foodScore), snake.color, 500)
             if winner:
                 break
             playerID += 1
 
     if winner:
-        gui.drawText("Winner, Winner, Chicken Dinner. ", (255,215,0), 500)  # io
-        gui.drawText(str(arena.players[playerID].name) + " won.", (255,215,0), 500)  # io
+        gui.drawText("Winner, Winner, Chicken Dinner. ", (255,215,0), 1000)
+        gui.drawText(str(arena.players[playerID].name) + " won.", (255,215,0), 1000)
     else:
-        gui.drawText("GAME OVER", (255,255,255), 500)  # io
+        gui.drawText("GAME OVER", (255,255,255), 1000)
         for snake in arena.players:
-            gui.drawText(str(snake.realScore) + " moves by " + str(snake.name), arena.players[playerID].color, 500)  # io
+            gui.drawText(str(snake.realScore) + " moves by " + str(snake.name), arena.players[playerID].color, 1000)
 # ..................................................................
 
 
