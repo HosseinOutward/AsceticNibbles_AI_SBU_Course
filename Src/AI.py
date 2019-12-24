@@ -3,6 +3,12 @@ import random
 
 
 def heuristic(ID, game):
+    return h1(ID,game)
+    #h=game.players[ID].headPos()
+    #return h2(game, h[0], h[1], game.foodGrid[h[0]][h[1]], game.players[ID].foodScore)
+
+
+def h1(ID, game):
     snake=game.players[ID]
 
     w, h = len(game.foodGrid), len(game.foodGrid[0])
@@ -33,6 +39,93 @@ def heuristic(ID, game):
             energy+=1
     return moves
 
+
+def h2(game, x, y, energy, score, acc=5):
+    w, h = len(game.foodGrid), len(game.foodGrid[0])
+    moves = 0
+    if score < game.winScore:
+        minPoint, minFood = [0 for i in range(acc)], 10
+        for r in range(1, energy):
+            for i in range(-r, r + 1):
+                if not (x + i >= w or y + r - abs(i) >= h or x + i < 0 or y + r - abs(i) < 0):
+                    if minFood > game.foodGrid[x + i][y + r - abs(i)] or game.foodGrid[x + i][y + r - abs(i)] != 0:
+                        minFood=game.foodGrid[x + i][y + r - abs(i)]
+                        minPoint.append([x + i, y + r - abs(i), minFood])
+                        del minPoint[0]
+            for i in range(-r + 1, r):
+                if not (x + i >= w or y + abs(i) - r >= h or x + i < 0 or y + abs(i) - r < 0):
+                    if minFood > game.foodGrid[x + i][y + abs(i) - r] or game.foodGrid[x + i][y + abs(i) - r] != 0:
+                        minFood = game.foodGrid[x + i][y + abs(i) - r]
+                        minPoint.append([x + i, y + abs(i) - r, minFood])
+                        del minPoint[0]
+
+        for i in range(1, acc+1):
+            mP=minPoint[-acc]
+            if mP is 0:
+                moves += energy + h2(game, x, y, energy+1, score, 2)
+            else:
+                moves += energy + h2(game, mP[0], mP[1], mP[2], score+game.foodAddScore+game.fScoreMulti*mP[2], 2)
+    else:
+        return 0
+
+    return moves
+
+
+class AI_Alpha_Beta:
+    winScore=500
+
+    def run(self, ID, gme):
+        game = Simulator.Arena(copy=gme)
+        self.winScore=game.winScore
+        return self.minimax(ID, ID, game, len(game.players)-1, 1000000,-1000000, True)
+
+    def minimax(self, ID, mainID, game, depth, alpha, beta, maximizingPlayer):
+        ID= ID % len(game.players)+1
+
+        if depth == 0 or game.players[ID].foodScore >= self.winScore:
+            return self.statEval(mainID, game)
+
+        successors = []
+        r = list(range(0,4))
+        random.shuffle(r)
+        for action in r:
+            nextNode = self.nextState(ID, action, game)
+            if nextNode != 'd':
+                successors.append(nextNode)
+
+        if len(successors)==0:
+            return -1000000
+
+        if maximizingPlayer:
+            maxEval = -1000000
+            for child in successors:
+                eval = self.minimax(ID+1, mainID, child, depth - 1, alpha, beta, False)
+                maxEval = max(maxEval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break
+            return maxEval
+        else:
+            minEval = 1000000
+            for child in successors:
+                eval = self.minimax(ID+1, mainID, child, depth - 1, alpha, beta, True)
+                minEval = min(minEval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break
+            return minEval
+
+    def nextState(self, ID, action, gme):
+        game = Simulator.Arena(copy=gme)
+        if game.nextTurn(ID, action) != 'd':
+            return game
+        else:
+            return 'd'
+
+    def statEval(self, mainID, game):
+        return -h1(mainID,game)
+        #h=game.players[mainID].headPos()
+        #return -h2(game, h[0], h[1], game.foodGrid[h[0]][h[1]], game.players[ID].foodScore)
 
 class AI_RBFS_S:
     winScore = 500

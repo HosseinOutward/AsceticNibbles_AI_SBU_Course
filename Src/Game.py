@@ -6,6 +6,8 @@ def askForAction(x, playerID, arena, gui):
         return AI.AI_IDS().run(playerID, arena)
     if x == "RBFS":
         return AI.AI_RBFS_S().run(playerID, arena)
+    if x == "MinMax":
+        return AI.AI_Alpha_Beta().run(playerID, arena)
     #if x == "A_STAR":
     #    return AI.AI_A_Star().run(playerID, arena)
     if x == "HUMAN":
@@ -27,7 +29,7 @@ def getInit():
     PlayerNames, PlayersType =[], []
     for i in range(numP):
         PlayerNames.append(str(input("name ")))
-        PlayersType.append(str(input("whats players Type of" + PlayerNames[i] + "(type EXACTLY: IDS, RBFS or Human )")).upper())
+        PlayersType.append(str(input("whats players Type of" + PlayerNames[i] + "(type EXACTLY: IDS, MinMax, RBFS or Human )")).upper())
 
     winScore = int(input("Score to Win "))
     trnCost = float(input("Turning Penalty "))
@@ -40,32 +42,32 @@ def getInit():
 
 
 def main():
-    #arena = Simulator.Arena(10, 5, True, 0.5, 3, 2, 20, ["alex", "john"], ["RBFS", "IDS"])
-    #gui = GUI.Graphics(10, 5, 30, arena)
-    arena, gui = getInit()
+    arena = Simulator.Arena(20, 10, True, 0.5, 5, 10, 1000, ["alex", "jeb"], ["MinMax", "RBFS"])
+    gui = GUI.Graphics(20, 10, 30, arena)
+    #arena, gui = getInit()
 
     winner = False
     while not(winner or len(arena.players)==0):
         playerID = 0
         for snake in arena.players:
-            gui.drawText("its " + str(snake.name) + "'s turn", snake.color, 10)
+            gui.drawText("its " + str(snake.name) + "'s turn", snake.color, 25)
             action = int(askForAction(snake.type, playerID, arena, gui))
             winner = arena.nextTurn(playerID, action)
             if winner == 'd':
                 winner = False
             gui.redrawPage(arena)
-            gui.drawText("your score is " + str(snake.foodScore), snake.color, 500)
+            gui.drawText("your score is " + str(snake.foodScore), snake.color, 1000)
             if winner:
                 break
             playerID += 1
 
     if winner:
-        gui.drawText("Winner, Winner, Chicken Dinner. ", (255,215,0), 1000)
-        gui.drawText(str(arena.players[playerID].name) + " won.", (255,215,0), 1000)
+        gui.drawText("Winner, Winner, Chicken Dinner. ", (255,215,0), 5000)
+        gui.drawText(str(arena.players[playerID].name) + " won.", (255,215,0), 10000)
     else:
         gui.drawText("GAME OVER", (255,255,255), 1000)
         for snake in arena.players:
-            gui.drawText(str(snake.realScore) + " moves by " + str(snake.name), arena.players[playerID].color, 1000)
+            gui.drawText(str(snake.realScore) + " moves by " + str(snake.name), arena.players[playerID].color, 10000)
 # ..................................................................
 
 
