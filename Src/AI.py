@@ -77,48 +77,53 @@ class AI_Alpha_Beta:
     def run(self, ID, gme):
         game = Simulator.Arena(copy=gme)
         self.winScore=game.winScore
-        return self.minimax(ID, ID, game, len(game.players)-1, 1000000,-1000000, True)
+        eval , dir= self.minimax(ID-1, ID-1, -1, game, len(game.players)-1, 10000,-10000, True)
+        return dir
 
-    def minimax(self, ID, mainID, game, depth, alpha, beta, maximizingPlayer):
-        ID= ID % len(game.players)+1
+    def minimax(self, ID, mainID, dir, game, depth, alpha, beta, maximizingPlayer):
+        ID= (ID+1) %len(game.players)
 
         if depth == 0 or game.players[ID].foodScore >= self.winScore:
-            return self.statEval(mainID, game)
+            return self.statEval(mainID, game), dir
 
         successors = []
         r = list(range(0,4))
         random.shuffle(r)
         for action in r:
             nextNode = self.nextState(ID, action, game)
-            if nextNode != 'd':
+            if not(nextNode is 'd'):
                 successors.append(nextNode)
 
         if len(successors)==0:
-            return -1000000
+            return -100000, dir
 
         if maximizingPlayer:
-            maxEval = -1000000
+            maxEval = -100000
             for child in successors:
-                eval = self.minimax(ID+1, mainID, child, depth - 1, alpha, beta, False)
+                eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth - 1, alpha, beta, False)
                 maxEval = max(maxEval, eval)
+                if eval == maxEval:
+                    dir = child[1]
                 alpha = max(alpha, eval)
                 if beta <= alpha:
                     break
-            return maxEval
+            return maxEval, dir
         else:
-            minEval = 1000000
+            minEval = 100000
             for child in successors:
-                eval = self.minimax(ID+1, mainID, child, depth - 1, alpha, beta, True)
+                eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth - 1, alpha, beta, True)
                 minEval = min(minEval, eval)
+                if eval == minEval:
+                    dir = child[1]
                 beta = min(beta, eval)
                 if beta <= alpha:
                     break
-            return minEval
+            return minEval, dir
 
     def nextState(self, ID, action, gme):
         game = Simulator.Arena(copy=gme)
         if game.nextTurn(ID, action) != 'd':
-            return game
+            return [game,action]
         else:
             return 'd'
 

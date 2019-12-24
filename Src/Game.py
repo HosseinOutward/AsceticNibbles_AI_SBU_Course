@@ -42,7 +42,7 @@ def getInit():
 
 
 def main():
-    arena = Simulator.Arena(20, 10, True, 0.5, 5, 10, 1000, ["alex", "jeb"], ["MinMax", "RBFS"])
+    arena = Simulator.Arena(20, 10, True, 0.5, 5, 15, 1000, ["alex", "jeb"], ["MinMax", "MinMax"])
     gui = GUI.Graphics(20, 10, 30, arena)
     #arena, gui = getInit()
 
