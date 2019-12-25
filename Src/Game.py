@@ -6,8 +6,8 @@ def askForAction(x, playerID, arena, gui):
         return AI.AI_IDS().run(playerID, arena)
     if x == "RBFS":
         return AI.AI_RBFS_S().run(playerID, arena)
-    if x == "MinMax":
-        return AI.AI_Alpha_Beta().run(playerID, arena)
+    if x == "MINMAX":
+        return AI.AI_Alpha_Beta().run(playerID, arena, 10)
     #if x == "A_STAR":
     #    return AI.AI_A_Star().run(playerID, arena)
     if x == "HUMAN":
@@ -42,7 +42,7 @@ def getInit():
 
 
 def main():
-    arena = Simulator.Arena(20, 10, True, 0.5, 5, 15, 1000, ["alex", "jeb"], ["MinMax", "MinMax"])
+    arena = Simulator.Arena(5, 3, True, 0.5, 5, 15, 250, ["alex", "jeb", "lary"], ["MINMAX", "MINMAX", "MINMAX"])
     gui = GUI.Graphics(20, 10, 30, arena)
     #arena, gui = getInit()
 
@@ -63,7 +63,7 @@ def main():
 
     if winner:
         gui.drawText("Winner, Winner, Chicken Dinner. ", (255,215,0), 5000)
-        gui.drawText(str(arena.players[playerID].name) + " won.", (255,215,0), 10000)
+        gui.drawText(str(arena.players[playerID].name) + " won.", arena.players[playerID].color, 10000)
     else:
         gui.drawText("GAME OVER", (255,255,255), 1000)
         for snake in arena.players:

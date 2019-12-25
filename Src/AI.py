@@ -74,14 +74,14 @@ def h2(game, x, y, energy, score, acc=5):
 class AI_Alpha_Beta:
     winScore=500
 
-    def run(self, ID, gme):
+    def run(self, ID, gme, depth):
         game = Simulator.Arena(copy=gme)
         self.winScore=game.winScore
-        eval , dir= self.minimax(ID-1, ID-1, -1, game, len(game.players)-1, 10000,-10000, True)
+        eval , dir= self.minimax(ID-1, ID, -1, game, depth, 10000, -10000)
         return dir
 
-    def minimax(self, ID, mainID, dir, game, depth, alpha, beta, maximizingPlayer):
-        ID= (ID+1) %len(game.players)
+    def minimax(self, ID, mainID, dir, game, depth, alpha, beta):
+        ID = (ID+1) % len(game.players)
 
         if depth == 0 or game.players[ID].foodScore >= self.winScore:
             return self.statEval(mainID, game), dir
@@ -97,10 +97,10 @@ class AI_Alpha_Beta:
         if len(successors)==0:
             return -100000, dir
 
-        if maximizingPlayer:
+        if mainID==ID:
             maxEval = -100000
             for child in successors:
-                eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth - 1, alpha, beta, False)
+                eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth, alpha, beta)
                 maxEval = max(maxEval, eval)
                 if eval == maxEval:
                     dir = child[1]
@@ -111,7 +111,7 @@ class AI_Alpha_Beta:
         else:
             minEval = 100000
             for child in successors:
-                eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth - 1, alpha, beta, True)
+                eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth-1, alpha, beta)
                 minEval = min(minEval, eval)
                 if eval == minEval:
                     dir = child[1]
@@ -123,12 +123,12 @@ class AI_Alpha_Beta:
     def nextState(self, ID, action, gme):
         game = Simulator.Arena(copy=gme)
         if game.nextTurn(ID, action) != 'd':
-            return [game,action]
+            return [game, action]
         else:
             return 'd'
 
     def statEval(self, mainID, game):
-        return -h1(mainID,game)
+        return -h1(mainID, game)
         #h=game.players[mainID].headPos()
         #return -h2(game, h[0], h[1], game.foodGrid[h[0]][h[1]], game.players[ID].foodScore)
 

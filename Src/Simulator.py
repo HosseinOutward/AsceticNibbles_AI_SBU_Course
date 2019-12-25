@@ -113,6 +113,8 @@ class Snake:
             self.body.append((self.headPos()[0], self.headPos()[1] - 1))
         elif dir == 3:
             self.body.append((self.headPos()[0] + 1, self.headPos()[1]))
+        elif dir== -1:
+            return self.move(random.randint(0, 3))
 
         if self.shekam == 0:
             del self.body[0]
@@ -141,3 +143,4 @@ class Snake:
             b = int(b) % 256
             ret = (r, g, b)
         return ret
+
