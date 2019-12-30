@@ -72,7 +72,7 @@ def h2(game, x, y, energy, score, acc=5):
 
 
 class AI_Alpha_Beta:
-    winScore=500
+    winScore = 500
 
     def run(self, ID, gme, depth):
         game = Simulator.Arena(copy=gme)
