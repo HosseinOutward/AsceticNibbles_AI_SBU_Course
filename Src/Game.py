@@ -23,7 +23,7 @@ def getInit(a):
         a=arena.foodGrid
         gui = GUI.Graphics(len(a), len(a[0]), 30, arena)
         ai = dill.load(open("SavedStates/Q_AI.pickle", "rb"))
-        #bug handel below, should be fixed soon...
+            #bug below, should be fixed soon...
         g = Simulator.Arena(20, 10, True, 1, 5, 15, 400, 3, ["Q_agent1", "Q_agent2", "MMb", "MMc", "MMd", "MMe"], ["Q-LEARNING", "Q-LEARNING", "MINMAX", "MINMAX", "MINMAX", "MINMAX"], True)
         arena.players=[Simulator.Snake(copy=a) for a in g.players]
 
