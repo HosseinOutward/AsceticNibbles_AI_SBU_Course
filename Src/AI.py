@@ -5,14 +5,14 @@ import random
 def heuristic(ID, game):
     return h1(ID,game)
     #h=game.players[ID].headPos()
-    #return h2(game, h[0], h[1], game.foodGrid[h[0]][h[1]], game.players[ID].foodScore)
+    #return h2(game, h[0], h[1], game.foodGrid[h[0]][h[1]], game.getTeamScore(ID))
 
 
 def h1(ID, game):
     snake=game.players[ID]
 
     w, h = len(game.foodGrid), len(game.foodGrid[0])
-    score, moves = snake.foodScore, 0
+    score, moves = game.getTeamScore(ID), 0
     x, y, energy = snake.headPos()[0], snake.headPos()[1], snake.shekam + len(snake.body)
     begin=1
     while score < game.winScore:
@@ -83,7 +83,7 @@ class AI_Alpha_Beta:
     def minimax(self, ID, mainID, dir, game, depth, alpha, beta):
         ID = (ID+1) % len(game.players)
 
-        if depth == 0 or game.players[ID].foodScore >= self.winScore:
+        if depth == 0 or game.getTeamScore(ID) >= self.winScore:
             return self.statEval(mainID, game), dir
 
         successors = []
@@ -97,7 +97,7 @@ class AI_Alpha_Beta:
         if len(successors)==0:
             return -100000, dir
 
-        if mainID==ID:
+        if game.players[ID].team == game.players[mainID].team:
             maxEval = -100000
             for child in successors:
                 eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth, alpha, beta)
@@ -130,7 +130,7 @@ class AI_Alpha_Beta:
     def statEval(self, mainID, game):
         return -h1(mainID, game)
         #h=game.players[mainID].headPos()
-        #return -h2(game, h[0], h[1], game.foodGrid[h[0]][h[1]], game.players[ID].foodScore)
+        #return -h2(game, h[0], h[1], game.foodGrid[h[0]][h[1]], game.getTeamScore(ID))
 
 class AI_RBFS_S:
     winScore = 500
@@ -145,7 +145,7 @@ class AI_RBFS_S:
 
     def RBFS(self, ID, game, fTillNow, f_limit):  # returns [success, action, f_reached]
         snake = game.players[ID]
-        if snake.foodScore >= self.winScore:
+        if game.getTeamScore(ID) >= self.winScore:
             return [True, random.randint(0,3), f_limit]
 
         successors = []

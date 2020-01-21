@@ -2,22 +2,23 @@ import random
 
 
 class Arena:
-    players, foodAddScore, fScoreMulti, maxFoodScore, foodGrid, consume, winScore, turnCost = [], 0, 0, 0, 0, 0, 0, 0
+    players, foodAddScore, fScoreMulti, maxFoodScore, foodGrid, consume, winScore, turnCost, numT = [], 0, 0, 0, 0, 0, 0, 0, 0
 
     def __init__(self, *args, copy=None):
         if copy is None:
             self.firstInit(*args)
+        elif copy is 'f':
+            self.loadFromFile()
         else:
             self.copyInit(copy)
 
-    def firstInit(self, width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, names, types):
-        self.consume, self.turnCost, self.foodAddScore, self.fScoreMulti, self.winScore = consumeMode, trnCost, fScoreAdd, fScoMul, winScr
+    def firstInit(self, width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, numT,names, types):
+        self.consume, self.turnCost, self.foodAddScore, self.fScoreMulti, self.winScore, self.numT = consumeMode, trnCost, fScoreAdd, fScoMul, winScr, numT
         self.foodGrid = [[random.randint(1, 9) for j in range(height)] for i in range(width)]
-        # need balancing for duo
         for i in range(len(names)):
-            self.players.append(Snake(names[i], types[i], width, height, i + 1, self.players))
-        for snake in self.players:
-            self.eat(snake, -1)
+            self.players.append(Snake(names[i], types[i], width, height, i + 1, self.players, i%numT))
+        for ID in range(len(self.players)):
+            self.eat(ID)
 
     def copyInit(self, gameToCopy):
         self.players = []
@@ -29,7 +30,11 @@ class Arena:
         self.turnCost = gameToCopy.turnCost
         self.maxFoodScore = gameToCopy.maxFoodScore
         self.consume = gameToCopy.consume
+        self.numT = gameToCopy.numT
         self.fScoreMulti = gameToCopy.fScoreMulti
+
+    def loadFromFile(self):
+        load
 
     def nextTurn(self, ID, action):
         snake = self.players[ID]
@@ -38,7 +43,7 @@ class Arena:
             self.kill(snake)
             return 'd'
         else:
-            self.eat(snake, action)
+            self.eat(ID)
             if snake.currentDir != action:
                 snake.foodScore -= self.turnCost
             snake.currentDir = action
@@ -46,14 +51,23 @@ class Arena:
             return True
         return False
 
-    def eat(self, snake, action):
+    def eat(self, ID):
+        snake=self.players[ID]
         if snake.shekam + len(snake.body) == 1:
             snake.foodScore += 1 + self.fScoreMulti * self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]
             snake.shekam += self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]
-            if snake.foodScore > self.maxFoodScore:
-                self.maxFoodScore = snake.foodScore
+            if self.getTeamScore(ID) > self.maxFoodScore:
+                self.maxFoodScore = self.getTeamScore(ID)
             if self.consume:
                 self.foodGrid[snake.headPos()[0]][snake.headPos()[1]] = 0
+
+    def getTeamScore(self, ID):
+        snake=self.players[ID]
+        score=0
+        for Othersnake in self.players:
+            if Othersnake.team==snake.team:
+                score+=Othersnake.foodScore
+        return score
 
     def impact(self, pos):
         width, height = len(self.foodGrid), len(self.foodGrid[0])
@@ -77,7 +91,7 @@ class Arena:
 
 # ...
 class Snake:
-    shekam, body, color, name, foodScore, realScore, type, currentDir = 0, 0, 0, 0, 0, 0, 0, -1
+    shekam, team, body, color, name, foodScore, realScore, type, currentDir = 0, 0, 0, 0, 0, 0, 0, 0, -1
 
     def __init__(self, *args, copy=None):
         if copy is None:
@@ -85,8 +99,8 @@ class Snake:
         else:
             self.copyInit(copy)
 
-    def firstInit(self, name, type, width, height, colorNum, playersList):
-        self.name, self.color, self.type = name, self.randColor(colorNum), type
+    def firstInit(self, name, type, width, height, colorNum, playersList, team):
+        self.name, self.color, self.type, self.team = name, self.randColor(colorNum), type, team
         diffrent = True
         while diffrent:
             diffrent, tempBody = False, [(random.randint(0, width - 1), random.randint(0, height - 1))]
@@ -103,6 +117,7 @@ class Snake:
         self.foodScore = snakeToCopy.foodScore
         self.realScore = snakeToCopy.realScore
         self.type = snakeToCopy.type
+        self.team = snakeToCopy.team
 
     def move(self, dir):  # down=0, left=1, up=2, right=3
         if dir == 0:
