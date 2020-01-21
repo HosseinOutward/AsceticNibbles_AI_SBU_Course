@@ -2,7 +2,7 @@ import random
 
 
 class Arena:
-    players, foodAddScore, fScoreMulti, maxFoodScore, foodGrid, consume, winScore, turnCost, numT = [], 0, 0, 0, 0, 0, 0, 0, 0
+    players, foodAddScore, fScoreMulti, maxFoodScore, foodGrid, consume, winScore, turnCost, numT, chance, initfoodGrid = [], 0, 0, 0, 0, 0, 0, 0, 0, [], []
 
     def __init__(self, *args, copy=None):
         if copy is None:
@@ -12,9 +12,14 @@ class Arena:
         else:
             self.copyInit(copy)
 
-    def firstInit(self, width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, numT,names, types):
+    def firstInit(self, width, height, consumeMode, trnCost, fScoreAdd, fScoMul, winScr, numT,names, types, stochastic):
         self.consume, self.turnCost, self.foodAddScore, self.fScoreMulti, self.winScore, self.numT = consumeMode, trnCost, fScoreAdd, fScoMul, winScr, numT
         self.foodGrid = [[random.randint(1, 9) for j in range(height)] for i in range(width)]
+        self.initfoodGrid = [[a for a in collumn] for collumn in self.foodGrid]
+        if stochastic:
+            self.chance = [[random.uniform(0, 1) for j in range(height)] for i in range(width)]
+        else:
+            self.chance = [[1 for j in range(height)] for i in range(width)]
         for i in range(len(names)):
             self.players.append(Snake(names[i], types[i], width, height, i + 1, self.players, i%numT))
         for ID in range(len(self.players)):
@@ -25,6 +30,8 @@ class Arena:
         for snake in gameToCopy.players:
             self.players.append(Snake(copy=snake))
         self.foodGrid = [[a for a in collumn] for collumn in gameToCopy.foodGrid]
+        self.initfoodGrid = [[a for a in collumn] for collumn in self.foodGrid]
+        self.chance = [[a for a in collumn] for collumn in gameToCopy.chance]
         self.foodAddScore = gameToCopy.foodAddScore
         self.winScore = gameToCopy.winScore
         self.turnCost = gameToCopy.turnCost
@@ -33,33 +40,51 @@ class Arena:
         self.numT = gameToCopy.numT
         self.fScoreMulti = gameToCopy.fScoreMulti
 
-    def loadFromFile(self):
-        load
+    def reset(self):
+        self.foodGrid = [[a for a in collumn] for collumn in self.initfoodGrid]
+        width, height = len(self.foodGrid), len(self.foodGrid[0])
+        pCount=len(self.players)
+        self.players=[]
+        for i in range(pCount):
+            self.players.append(Snake('s', "MINMAX", width, height, i + 1, self.players, i%self.numT))
+        for snakeID in range(len(self.players)):
+            self.eat(snakeID)
+        ID=random.randint(0, len(self.players)-1)
+        return self.stateTag(ID), random.randint(0,pCount-1)
+
+    def stateTag(self, ID):
+        width, height = len(self.foodGrid), len(self.foodGrid[0])
+        head=self.players[ID].headPos()
+        energy= len(self.players[ID].body)+self.players[ID].shekam
+        return (head[0] * width * height) + (head[1] * width) + energy
 
     def nextTurn(self, ID, action):
         snake = self.players[ID]
         snake.move(int(action))
-        if self.impact(snake.headPos()):
+        impact=self.impact(snake.headPos(), ID)
+        if impact is 'd':
             self.kill(snake)
             return 'd'
-        else:
-            self.eat(ID)
-            if snake.currentDir != action:
-                snake.foodScore -= self.turnCost
-            snake.currentDir = action
+        elif impact:
+            snake.foodScore-=1
+        self.eat(ID)
+        if snake.currentDir != action:
+            snake.foodScore -= self.turnCost
+        snake.currentDir = action
         if self.maxFoodScore >= self.winScore:
             return True
         return False
 
     def eat(self, ID):
         snake=self.players[ID]
+        if random.uniform(0, 1) > self.chance[snake.headPos()[0]][snake.headPos()[1]]: return 0
         if snake.shekam + len(snake.body) == 1:
             snake.foodScore += 1 + self.fScoreMulti * self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]
             snake.shekam += self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]
             if self.getTeamScore(ID) > self.maxFoodScore:
                 self.maxFoodScore = self.getTeamScore(ID)
             if self.consume:
-                self.foodGrid[snake.headPos()[0]][snake.headPos()[1]] = 0
+                self.foodGrid[snake.headPos()[0]][snake.headPos()[1]] = round(self.foodGrid[snake.headPos()[0]][snake.headPos()[1]]*random.uniform(0.1,0.9))
 
     def getTeamScore(self, ID):
         snake=self.players[ID]
@@ -69,10 +94,13 @@ class Arena:
                 score+=Othersnake.foodScore
         return score
 
-    def impact(self, pos):
+    def impact(self, pos, ID):
         width, height = len(self.foodGrid), len(self.foodGrid[0])
         if pos[0] == width or pos[1] == height or pos[0] == -1 or pos[1] == -1:
-            return True
+            return 'd'
+        for part in self.players[ID].body[:-1]:
+            if pos[0] == part[0] and pos[1] == part[1]:
+                return 'd'
 
         i = 0
         for OtherSnake in self.players:

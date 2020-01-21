@@ -1,5 +1,7 @@
 from Src import Simulator
 import random
+import numpy as np
+from collections import defaultdict
 
 
 def heuristic(ID, game):
@@ -71,6 +73,91 @@ def h2(game, x, y, energy, score, acc=5):
     return moves
 
 
+class AI_Q_LEARNING:
+    winScore = 500
+    Q=0
+
+    def run(self, ID, gme):
+        state=gme.stateTag(ID)
+        return np.argmax(self.Q[state])
+
+    def train(self, game, count):
+        self.q_learning(game, count)
+
+    def make_epsilon_greedy_policy(self, Q, epsilon, nA):
+
+        def policy_fn(observation):
+            A = np.ones(nA, dtype=float) * epsilon / nA
+            best_action = np.argmax(Q[observation])
+            A[best_action] += (1.0 - epsilon)
+            return A
+
+        return policy_fn
+
+    def q_learning(self, gme, num_episodes, discount_factor=0.9, alpha=0.5, epsilon=0.1):
+        self.Q = defaultdict(lambda: np.zeros(4))
+
+        policy = self.make_epsilon_greedy_policy(self.Q, epsilon, 4)
+
+        for i_episode in range(num_episodes):
+            env = Simulator.Arena(copy=gme)
+            state, ID = env.reset()
+            env.players[ID].name=True
+
+            while True:
+                action_probs = policy(state)
+                action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+
+                reward=env.getTeamScore(ID)
+                #done, ID=self.nextRound(env, ID, action)
+                done=env.nextTurn(ID, action)
+                if done is 'd':
+                    reward=-1000000
+                    next_state=state
+                elif done:
+                    reward=100
+                    reward=env.getTeamScore(ID)-reward
+                    next_state=env.stateTag(ID)
+                else:
+                    reward=env.getTeamScore(ID)-reward
+                    next_state=env.stateTag(ID)
+
+                # TD Update
+                best_next_action = np.argmax(self.Q[next_state])
+                td_target = reward + discount_factor * self.Q[next_state][best_next_action]
+                td_delta = td_target - self.Q[state][action]
+                self.Q[state][action] += alpha * td_delta
+
+                if done:
+                    break
+
+                state = next_state
+
+    def nextRound(self, arena, ID, action):
+        winner = False
+        playerID=0
+        while playerID < len(arena.players):
+            if playerID == ID:
+                winner = arena.nextTurn(playerID, action)
+                if winner == 'd':
+                    return 'd', ID
+            else:
+                rivalAction = int(AI_Alpha_Beta().run(playerID, arena, 20))
+                winner = arena.nextTurn(playerID, rivalAction)
+                if winner == 'd':
+                    winner = False
+                    playerID-=1
+                for i, snake in enumerate(arena.players):
+                    if snake.name is True: ID=i
+            playerID+=1
+
+            if winner:
+                break
+
+        if playerID == ID and winner: return True, ID
+        return False, ID
+
+
 class AI_Alpha_Beta:
     winScore = 500
 
@@ -131,6 +218,7 @@ class AI_Alpha_Beta:
         return -h1(mainID, game)
         #h=game.players[mainID].headPos()
         #return -h2(game, h[0], h[1], game.foodGrid[h[0]][h[1]], game.getTeamScore(ID))
+
 
 class AI_RBFS_S:
     winScore = 500
