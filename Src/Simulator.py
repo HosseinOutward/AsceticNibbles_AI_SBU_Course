@@ -26,9 +26,7 @@ class Arena:
             self.eat(ID)
 
     def copyInit(self, gameToCopy):
-        self.players = []
-        for snake in gameToCopy.players:
-            self.players.append(Snake(copy=snake))
+        self.copyPlayers(gameToCopy)
         self.foodGrid = [[a for a in collumn] for collumn in gameToCopy.foodGrid]
         self.initfoodGrid = [[a for a in collumn] for collumn in self.foodGrid]
         self.chance = [[a for a in collumn] for collumn in gameToCopy.chance]
@@ -37,8 +35,20 @@ class Arena:
         self.turnCost = gameToCopy.turnCost
         self.maxFoodScore = gameToCopy.maxFoodScore
         self.consume = gameToCopy.consume
-        self.numT = gameToCopy.numT
         self.fScoreMulti = gameToCopy.fScoreMulti
+
+    def copyPlayers(self, gameToCopy):
+        self.players = []
+        for snake in gameToCopy.players:
+            self.players.append(Snake(copy=snake))
+        self.numT = gameToCopy.numT
+
+
+    def loadPatternInit(self, pattern):
+        for i in range(0,len(self.foodGrid)):
+            for j in range(0,len(self.foodGrid[0])):
+                self.foodGrid[i][j]=pattern[(i*len(pattern))//len(self.foodGrid)][(j*len(pattern[0]))//len(self.foodGrid[0])]
+        self.initfoodGrid = [[a for a in collumn] for collumn in self.foodGrid]
 
     def reset(self):
         self.foodGrid = [[a for a in collumn] for collumn in self.initfoodGrid]
@@ -186,4 +196,3 @@ class Snake:
             b = int(b) % 256
             ret = (r, g, b)
         return ret
-

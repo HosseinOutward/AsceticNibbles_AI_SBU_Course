@@ -1,5 +1,13 @@
 from Src import GUI, Simulator, AI
+from string import ascii_lowercase as alphabeta
 import dill
+
+def saveGames(arena, ai, num):
+    dill.dump(arena, file=open("SavedStates/"+str(num)+"-Arena.pickle", "wb"))
+    dill.dump(ai, file=open("SavedStates/"+str(num)+"-Q_AI.pickle", "wb"))
+
+def savePattern(pattern, num):
+    dill.dump(pattern, file=open("Patterns/" + str(num) + ".pickle", "wb"))
 
 def askForAction(x, playerID, arena, gui,ai):
     if x == "IDS":
@@ -10,22 +18,23 @@ def askForAction(x, playerID, arena, gui,ai):
         return AI.AI_Alpha_Beta().run(playerID, arena, 15)
     if x == "Q-LEARNING":
         return ai.run(playerID, arena)
-    #if x == "A_STAR":
-    #    return AI.AI_A_Star().run(playerID, arena)
 
     return gui.getAction()
 
 
 def getInit(a):
     ai=0
-    if a == 'Y':
-        arena = dill.load(open("SavedStates/arena.pickle", "rb"))
-        a=arena.foodGrid
-        gui = GUI.Graphics(len(a), len(a[0]), 30, arena)
-        ai = dill.load(open("SavedStates/Q_AI.pickle", "rb"))
-            #bug below, should be fixed soon...
-        g = Simulator.Arena(20, 10, True, 1, 5, 15, 400, 3, ["Q_agent1", "Q_agent2", "MMb", "MMc", "MMd", "MMe"], ["Q-LEARNING", "Q-LEARNING", "MINMAX", "MINMAX", "MINMAX", "MINMAX"], True)
-        arena.players=[Simulator.Snake(copy=a) for a in g.players]
+    if a == 'L':
+        n=str(input("Level Number: "))
+        arena = dill.load(open("SavedStates/"+n+"-Arena.pickle", "rb"))
+        ai = dill.load(open("SavedStates/"+n+"-Q_AI.pickle", "rb"))
+
+        #needs other input
+        cubeSize=30
+        g = Simulator.Arena(len(arena.foodGrid), len(arena.foodGrid[0]), True, 1, 5, 15, 400, 3, ["Q_agent1", "MinMax1", "MinMax3", "Q_agent2", "MinMax2", "MinMax4"], ["Q-LEARNING", "MINMAX", "MINMAX", "Q-LEARNING", "MINMAX", "MINMAX"], True)
+
+        arena.copyPlayers(g)
+        gui = GUI.Graphics(len(arena.foodGrid), len(arena.foodGrid[0]), cubeSize, arena)
 
     elif a == 'N':
         fScoreAdd = int(input("fScore Add "))
@@ -64,47 +73,65 @@ def getInit(a):
 
         if str(input("save this World? Y/N")).upper() is 'Y': dill.dump(arena, file = open("arena.pickle", "wb"))
 
+    elif a == 'P':
+        #needs other input
+        cubeSize=30
+        arena = Simulator.Arena(20, 10, True, 1, 5, 15, 400, 3, ["Q_agent1", "Q_agent2", "MMb", "MMc", "MMd", "MMe"], ["MINMAX", "MINMAX", "MINMAX", "MINMAX", "MINMAX", "MINMAX"], True)
+
+        n=str(input("Pattern Number: "))
+        pattern=dill.load(open("Patterns/"+n+".pickle", "rb"))
+        arena.loadPatternInit(pattern)
+        gui = GUI.Graphics(len(arena.foodGrid), len(arena.foodGrid[0]), cubeSize, arena)
+
     else:
         arena = Simulator.Arena(10, 5, True, 1, 5, 15, 400, 2, ["Q_agent", "MMa"], ["Q-LEARNING", "MINMAX"], True)
         gui = GUI.Graphics(10, 5, 30, arena)
         ai=AI.AI_Q_LEARNING()
-        ai.train(arena, 10000)
-        #dill.dump(arena, file=open("SavedStates/arena.pickle", "wb"))
-        #dill.dump(ai, file=open("SavedStates/Q_AI.pickle", "wb"))
+        ai.train(arena, 15000)
+        #saveGames(arena, ai, 4)
 
     return arena, gui, ai
 # ..................................................................
 
 
 def main():
-    #arena, gui = getInit(str(input("Load from file? (y/n) ")))
-    arena, gui, ai = getInit(str(input("load? Y/N ")).upper())
-
+    arena, gui, ai = getInit(str(input("Load level, Load Pattern, New Game (L/P/N)? ")).upper())
 
     winner = False
     while not(winner or len(arena.players)==0):
         playerID = 0
         for snake in arena.players:
-            gui.drawText("its " + str(snake.name) + " of team " + str(snake.team) + "'s turn", snake.color, 25)
-            action = int(askForAction(snake.type, playerID, arena, gui,ai))
+            gui.drawText(str(snake.name) + " (of team " + str(alphabeta[snake.team]).upper() + ")", snake.color, 1000)
+            action = int(askForAction(snake.type, playerID, arena, gui, ai))
             winner = arena.nextTurn(playerID, action)
             gui.redrawPage(arena)
+            gui.drawScores(arena)
+            gui.drawText(str(snake.name) + " (of team " + str(alphabeta[snake.team]).upper() + ") individual Score is: " + str(snake.foodScore), snake.color, 1000)
             if winner == 'd':
                 winner = False
-            else:
-                gui.drawText(str(snake.name) + " of team " + str(snake.team) + " score is " + str(arena.getTeamScore(playerID)), snake.color, 2000)
-            if winner:
+            elif winner:
                 break
             playerID += 1
 
     if winner:
         gui.drawText("Winner, Winner, Chicken Dinner. ", (255,215,0), 3000)
-        gui.drawText(str(arena.players[playerID].name) + " won.", arena.players[playerID].color, 5000)
+        gui.drawText("Team " + str(alphabeta[arena.players[playerID].team]).upper() + " won.",  (255,215,0), 3000)
     else:
-        gui.drawText("GAME OVER", (255,255,255), 1000)
+        gui.drawText("GAME OVER", (255,255,255), 3000)
         for snake in arena.players:
-            gui.drawText(str(snake.realScore) + " moves by " + str(snake.name), arena.players[playerID].color, 10000)
+            gui.drawText(str(snake.realScore) + " moves by " + str(snake.name), arena.players[playerID].color, 1000)
 # ..................................................................
 
 
 main()
+
+#a=[[1,3,5,7,9,7,5,3,1],
+#   [1,3,5,7,9,7,5,3,1],
+#   [1,3,5,7,9,7,5,3,1],
+#   [1,3,5,7,9,7,5,3,1],
+#   [1,3,5,7,9,7,5,3,1],
+#   [1,3,5,7,9,7,5,3,1],
+#   [1,3,5,7,9,7,5,3,1],
+#   [1,3,5,7,9,7,5,3,1],
+#   [1,3,5,7,9,7,5,3,1]]
+#savePattern(a, 5)

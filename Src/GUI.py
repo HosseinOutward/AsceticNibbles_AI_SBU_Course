@@ -1,4 +1,5 @@
 import pygame
+from string import ascii_lowercase as alphabeta
 
 class Graphics:
     pixelWidth, pixelHeight, page, cubeSize = 0, 0, 0, 0
@@ -6,7 +7,7 @@ class Graphics:
     def __init__(self, w, h, cubeSize, game):
         self.cubeSize = cubeSize
         self.pixelWidth, self.pixelHeight = w * self.cubeSize+w-1, h * self.cubeSize+h-1
-        self.page = pygame.display.set_mode((self.pixelWidth, self.pixelHeight+ 2*self.cubeSize))
+        self.page = pygame.display.set_mode((self.pixelWidth+ 6*self.cubeSize, self.pixelHeight+ 2*self.cubeSize))
         self.redrawPage(game)
 
     def redrawPage(self, game):
@@ -38,6 +39,23 @@ class Graphics:
         self.page.blit(text_surface, (self.cubeSize//3, self.pixelHeight+self.cubeSize//3))
         pygame.display.update()
         pygame.time.delay(delay)
+
+    def drawScores(self, game):
+        for i in range(game.numT):
+            pygame.draw.rect(self.page, (0,0,0), (0,self.pixelHeight , self.pixelWidth, 2*self.cubeSize))
+            pygame.font.init()
+            font = pygame.font.SysFont('arial', self.cubeSize)
+
+            color=game.players[i].color
+            text = "Team " + alphabeta[i].upper() + ": " + str(game.getTeamScore(i))
+            text_surface = font.render(text, True, color)
+
+            x=len(game.foodGrid)*(self.cubeSize+1)+self.cubeSize//3
+            y=i*self.cubeSize+i*self.cubeSize//3
+            self.page.blit(text_surface, (x, y))
+
+            pygame.display.update()
+
 
     def colorCube(self, i, j, color):
         pygame.draw.rect(self.page, color, (self.pixelPos(i), self.pixelPos(j), self.cubeSize, self.cubeSize))
