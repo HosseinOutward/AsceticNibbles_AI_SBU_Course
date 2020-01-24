@@ -2,24 +2,26 @@ from Src import GUI, Simulator, AI
 from string import ascii_lowercase as alphabeta
 import dill
 
-def saveGames(arena, ai, num):
-    dill.dump(arena, file=open("SavedStates/"+str(num)+"-Arena.pickle", "wb"))
-    dill.dump(ai, file=open("SavedStates/"+str(num)+"-Q_AI.pickle", "wb"))
-
-def savePattern(pattern, num):
-    dill.dump(pattern, file=open("Patterns/" + str(num) + ".pickle", "wb"))
-
 def askForAction(x, playerID, arena, gui,ai):
     if x == "IDS":
         return AI.AI_IDS().run(playerID, arena)
     if x == "RBFS":
         return AI.AI_RBFS_S().run(playerID, arena)
     if x == "MINMAX":
-        return AI.AI_Alpha_Beta().run(playerID, arena, 15)
+        return AI.AI_Alpha_Beta().run(playerID, arena, 20)
     if x == "Q-LEARNING":
         return ai.run(playerID, arena)
 
     return gui.getAction()
+
+
+def saveGames(arena, ai, num):
+    dill.dump(arena, file=open("SavedStates/"+str(num)+"-Arena.pickle", "wb"))
+    dill.dump(ai, file=open("SavedStates/"+str(num)+"-Q_AI.pickle", "wb"))
+
+
+def savePattern(pattern, num):
+    dill.dump(pattern, file=open("Patterns/" + str(num) + ".pickle", "wb"))
 
 
 def getInit(a):
