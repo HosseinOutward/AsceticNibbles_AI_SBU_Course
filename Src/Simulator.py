@@ -64,12 +64,9 @@ class Arena:
 
     def stateTag(self, ID):
         width, height = len(self.foodGrid), len(self.foodGrid[0])
+        head=self.players[ID].headPos()
         energy= len(self.players[ID].body)+self.players[ID].shekam
-        tag=0
-        for i,part in enumerate(self.players[ID].body):
-            tag+=(tag*width+part[0])*height+part[1]
-        tag+=energy
-        return
+        return ((head[0] * width * height) + (head[1] * width) + energy)*4+self.players[ID].currentDir
 
     def nextTurn(self, ID, action):
         snake = self.players[ID]
