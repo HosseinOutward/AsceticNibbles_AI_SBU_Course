@@ -89,7 +89,7 @@ def getInit(a):
         arena = Simulator.Arena(10, 5, True, 1, 5, 10, 200, 22, ["Q_agent1", "MinMax1", "Q_agent2", "MinMax2"], ["Q-LEARNING", "MINMAX", "Q-LEARNING", "MINMAX"], True)
         gui = GUI.Graphics(10, 5, 30, arena)
         ai=AI.AI_Q_LEARNING()
-        ai.train(arena, 15000)
+        ai.train(arena, 20000)
         saveGames(arena, ai, 7)
 
     return arena, gui, ai
@@ -108,7 +108,7 @@ def main():
             winner = arena.nextTurn(playerID, action)
             gui.redrawPage(arena)
             gui.drawScores(arena)
-            gui.drawText("individual Score is: " + str(snake.foodScore), snake.color, 1000)
+            gui.drawText(str(snake.name) + " (of team " + str(alphabeta[snake.team]).upper() + ") individual Score is: " + str(snake.foodScore), snake.color, 1000)
             if winner == 'd':
                 winner = False
             elif winner:
