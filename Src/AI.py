@@ -94,7 +94,7 @@ class AI_Q_LEARNING:
 
         return policy_fn
 
-    def q_learning(self, gme, num_episodes, discount_factor=0.9, alpha=0.5, epsilon=0.1):
+    def q_learning(self, gme, num_episodes, discount_factor=0.9, alpha=0.9, epsilon=0.1):
         self.Q = defaultdict(lambda: np.zeros(4))
 
         policy = self.make_epsilon_greedy_policy(self.Q, epsilon, 4)
@@ -163,31 +163,35 @@ class AI_Alpha_Beta:
 
     def run(self, ID, gme, depth):
         game = Simulator.Arena(copy=gme)
+        game.players[ID].name=True
         self.winScore=game.winScore
-        eval , dir= self.minimax(ID-1, ID, -1, game, depth, 10000, -10000)
+        eval , dir= self.minimax(ID, ID, game, depth, 10000, -10000)
         return dir
 
-    def minimax(self, ID, mainID, dir, game, depth, alpha, beta):
-        ID = (ID+1) % len(game.players)
+    def minimax(self, curID, mainID, game, depth, alpha, beta):
+        curID = curID % len(game.players)
+        for i, snake in enumerate(game.players):
+            if snake.name==True:
+                mainID=i
 
-        if depth == 0 or game.getTeamScore(ID) >= self.winScore:
-            return self.statEval(mainID, game), dir
+        if depth == 0 or game.getTeamScore(curID) >= self.winScore:
+            return self.statEval(mainID, game), -1
 
         successors = []
         r = list(range(0,4))
         random.shuffle(r)
         for action in r:
-            nextNode = self.nextState(ID, action, game)
+            nextNode = self.nextState(curID, action, game)
             if not(nextNode is 'd'):
                 successors.append(nextNode)
 
         if len(successors)==0:
             return -100000, dir
 
-        if game.players[ID].team == game.players[mainID].team:
+        if game.players[curID].team == game.players[mainID].team:
             maxEval = -100000
             for child in successors:
-                eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth, alpha, beta)
+                eval, _ = self.minimax(curID+1, mainID, child[0], depth, alpha, beta)
                 maxEval = max(maxEval, eval)
                 if eval == maxEval:
                     dir = child[1]
@@ -198,7 +202,7 @@ class AI_Alpha_Beta:
         else:
             minEval = 100000
             for child in successors:
-                eval, dir2 = self.minimax(ID+1, mainID, child[1], child[0], depth-1, alpha, beta)
+                eval, _ = self.minimax(curID+1, mainID, child[0], depth-1, alpha, beta)
                 minEval = min(minEval, eval)
                 if eval == minEval:
                     dir = child[1]

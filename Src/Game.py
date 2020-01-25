@@ -33,7 +33,7 @@ def getInit(a):
 
         #needs other input
         cubeSize=30
-        g = Simulator.Arena(len(arena.foodGrid), len(arena.foodGrid[0]), True, 1, 5, 15, 400, 3, ["Q_agent1", "MinMax1", "MinMax3", "Q_agent2", "MinMax2", "MinMax4"], ["Q-LEARNING", "MINMAX", "MINMAX", "Q-LEARNING", "MINMAX", "MINMAX"], True)
+        g = Simulator.Arena(len(arena.foodGrid), len(arena.foodGrid[0]), True, 1, 5, 10, 200, 2, ["Q_agent1", "MinMax1", "Q_agent2", "MinMax2"], ["Q-LEARNING", "MINMAX", "Q-LEARNING", "MINMAX"], True)
 
         arena.copyPlayers(g)
         gui = GUI.Graphics(len(arena.foodGrid), len(arena.foodGrid[0]), cubeSize, arena)
@@ -78,7 +78,7 @@ def getInit(a):
     elif a == 'P':
         #needs other input
         cubeSize=30
-        arena = Simulator.Arena(20, 10, True, 1, 5, 15, 400, 3, ["Q_agent1", "Q_agent2", "MMb", "MMc", "MMd", "MMe"], ["MINMAX", "MINMAX", "MINMAX", "MINMAX", "MINMAX", "MINMAX"], True)
+        arena = Simulator.Arena(8, 8, True, 1, 5, 10, 200, 2, ["Q_agent1", "MinMax1", "Q_agent2", "MinMax2"], ["Q-LEARNING", "MINMAX", "Q-LEARNING", "MINMAX"], True)
 
         n=str(input("Pattern Number: "))
         pattern=dill.load(open("Patterns/"+n+".pickle", "rb"))
@@ -86,11 +86,11 @@ def getInit(a):
         gui = GUI.Graphics(len(arena.foodGrid), len(arena.foodGrid[0]), cubeSize, arena)
 
     else:
-        arena = Simulator.Arena(10, 5, True, 1, 5, 15, 400, 2, ["Q_agent", "MMa"], ["Q-LEARNING", "MINMAX"], True)
+        arena = Simulator.Arena(10, 5, True, 1, 5, 10, 200, 22, ["Q_agent1", "MinMax1", "Q_agent2", "MinMax2"], ["Q-LEARNING", "MINMAX", "Q-LEARNING", "MINMAX"], True)
         gui = GUI.Graphics(10, 5, 30, arena)
         ai=AI.AI_Q_LEARNING()
         ai.train(arena, 15000)
-        #saveGames(arena, ai, 4)
+        saveGames(arena, ai, 7)
 
     return arena, gui, ai
 # ..................................................................
@@ -108,7 +108,7 @@ def main():
             winner = arena.nextTurn(playerID, action)
             gui.redrawPage(arena)
             gui.drawScores(arena)
-            gui.drawText(str(snake.name) + " (of team " + str(alphabeta[snake.team]).upper() + ") individual Score is: " + str(snake.foodScore), snake.color, 1000)
+            gui.drawText("individual Score is: " + str(snake.foodScore), snake.color, 1000)
             if winner == 'd':
                 winner = False
             elif winner:
@@ -124,7 +124,6 @@ def main():
             gui.drawText(str(snake.realScore) + " moves by " + str(snake.name), arena.players[playerID].color, 1000)
 # ..................................................................
 
-
 main()
 
 #a=[[1,3,5,7,9,7,5,3,1],
@@ -136,4 +135,4 @@ main()
 #   [1,3,5,7,9,7,5,3,1],
 #   [1,3,5,7,9,7,5,3,1],
 #   [1,3,5,7,9,7,5,3,1]]
-#savePattern(a, 5)
+#savePattern(a, 6)

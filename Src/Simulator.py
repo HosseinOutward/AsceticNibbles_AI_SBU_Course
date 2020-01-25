@@ -64,9 +64,12 @@ class Arena:
 
     def stateTag(self, ID):
         width, height = len(self.foodGrid), len(self.foodGrid[0])
-        head=self.players[ID].headPos()
         energy= len(self.players[ID].body)+self.players[ID].shekam
-        return (head[0] * width * height) + (head[1] * width) + energy
+        tag=0
+        for i,part in enumerate(self.players[ID].body):
+            tag+=(tag*width+part[0])*height+part[1]
+        tag+=energy
+        return
 
     def nextTurn(self, ID, action):
         snake = self.players[ID]
@@ -81,7 +84,7 @@ class Arena:
         if snake.currentDir != action:
             snake.foodScore -= self.turnCost
         snake.currentDir = action
-        if self.maxFoodScore >= self.winScore:
+        if self.getTeamScore(ID) >= self.winScore:
             return True
         return False
 

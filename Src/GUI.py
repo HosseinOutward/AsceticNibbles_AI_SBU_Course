@@ -7,7 +7,7 @@ class Graphics:
     def __init__(self, w, h, cubeSize, game):
         self.cubeSize = cubeSize
         self.pixelWidth, self.pixelHeight = w * self.cubeSize+w-1, h * self.cubeSize+h-1
-        self.page = pygame.display.set_mode((self.pixelWidth+ 6*self.cubeSize, self.pixelHeight+ 2*self.cubeSize))
+        self.page = pygame.display.set_mode((self.pixelWidth+6*self.cubeSize, self.pixelHeight+2*self.cubeSize))
         self.redrawPage(game)
 
     def redrawPage(self, game):
@@ -32,7 +32,7 @@ class Graphics:
             self.markHead(snake.body[-1][0], snake.body[-1][1])
 
     def drawText(self, text, color, delay):
-        pygame.draw.rect(self.page, (0,0,0), (0,self.pixelHeight , self.pixelWidth, 2*self.cubeSize))
+        pygame.draw.rect(self.page, (0,0,0), (0, self.pixelHeight, self.pixelWidth+6*self.cubeSize, 2*self.cubeSize))
         pygame.font.init()
         font = pygame.font.SysFont('arial', self.cubeSize)
         text_surface = font.render(text, True, color)
