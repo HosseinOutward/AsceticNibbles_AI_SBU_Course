@@ -186,7 +186,7 @@ class AI_Alpha_Beta:
                 successors.append(nextNode)
 
         if len(successors)==0:
-            return -100000, dir
+            return -100000, -1
 
         if game.players[curID].team == game.players[mainID].team:
             maxEval = -100000
