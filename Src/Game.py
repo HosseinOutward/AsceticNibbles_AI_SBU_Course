@@ -11,6 +11,8 @@ def askForAction(x, playerID, arena, gui,ai):
         return AI.AI_Alpha_Beta().run(playerID, arena, 20)
     if x == "Q-LEARNING":
         return ai.run(playerID, arena)
+    if x=="ASTAR":
+        return AI.AI_AStar().run(playerID, arena)
 
     return gui.getAction()
 

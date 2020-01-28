@@ -315,3 +315,152 @@ class AI_IDS:
         else:
             return 'd'
     # ................................................................................................
+
+
+class Node():
+    """A node class for A* Pathfinding"""
+
+    def __init__(self, parent=None, arena=None, actionTaken=None):
+        self.actionTaken = actionTaken
+        self.parent = parent
+        self.arena = arena
+
+        self.g = 0
+        self.h = 0
+        self.f = 0
+
+    def win(self,ID):
+        return self.arena.getTeamScore(ID)>=self.arena.winScore
+
+    def eq(self, other):
+        if (
+            self.playersEqu(self.arena.players, other.arena.players) and
+            self.arenaEqu(self.arena, other.arena)
+        ):
+            return True
+        return False
+    
+    def arenaEqu(self, arena1, arena2):
+        if (
+            arena1.foodGrid == arena2.foodGrid and
+            arena1.initfoodGrid == arena2.initfoodGrid and
+            arena1.chance == arena2.chance and
+            arena1.foodAddScore == arena2.foodAddScore and
+            arena1.winScore == arena2.winScore and
+            arena1.turnCost == arena2.turnCost and
+            arena1.maxFoodScore == arena2.maxFoodScore and
+            arena1.consume == arena2.consume and
+            arena1.fScoreMulti == arena2.fScoreMulti
+        ):
+            return True
+        return False
+    
+    def playersEqu(self, p1, p2):
+        for i, snake1 in enumerate(p1):
+            snake2 = p2[i]
+            if not(
+                snake1.name == snake2.name and
+                snake1.shekam == snake2.shekam and
+                snake1.body == snake2.body and
+                snake1.color == snake2.color and
+                snake1.foodScore == snake2.foodScore and
+                snake1.realScore == snake2.realScore and
+                snake1.type == snake2.type and
+                snake1.team == snake2.team
+            ):
+                return False
+        return True
+        
+
+class AI_AStar:
+    actions=[]
+
+    def run(self, ID, gme):
+        self.actions=[0,1,2,3]
+        game = Simulator.Arena(copy=gme)
+        a=self.astar(game,ID)
+        print(a)
+        return a[0]
+
+    def astar(self, start,ID):
+        temp=False
+        # Create start and end node
+        start_node = Node(None, start)
+        start_node.g = start_node.h = start_node.f = 0
+
+        # Initialize both open and closed list
+        open_list = []
+        closed_list = []
+
+        # Add the start node
+        open_list.append(start_node)
+
+        # Loop until you find the end
+        while len(open_list) > 0:
+
+            # Get the current node
+            current_node = open_list[0]
+            current_index = 0
+            for index, item in enumerate(open_list):
+                if item.f < current_node.f:
+                    current_node = item
+                    current_index = index
+
+            # Pop current off open list, add to closed list
+            open_list.pop(current_index)
+            closed_list.append(current_node)
+
+            # Found the goal
+            if current_node.win(ID):
+                path = []
+                current = current_node
+                while current is not None:
+                    path.append(current.actionTaken)
+                    current = current.parent
+                path=path[:-1]
+                return path[::-1]  # Return reversed path
+
+            # Generate children
+            children = []
+            for action in self.actions:
+                next_arena=self.nextState(ID, action, current_node.arena)
+                if not(next_arena=='d'):
+                    children.append(Node(current_node, next_arena, action))
+
+            # Loop through children
+            for child in children:
+
+                # Child is on the closed list
+                for closed_child in closed_list:
+                    if child.eq(closed_child):
+                        temp=True
+                        break
+                if temp:
+                    temp=False
+                    break
+
+                # Create the f, g, and h values
+                child.g = current_node.g + 1
+                child.h = heuristic(ID,child.arena)
+                child.f = child.g + child.h
+
+                # Child is already in the open list
+                for open_node in open_list:
+                    if child.eq(open_node) and child.g > open_node.g:
+                        temp = True
+                        break
+                if temp:
+                    temp = False
+                    break
+
+                # Add the child to the open list
+                open_list.append(child)
+
+    def nextState(self, ID, action, gme):
+        game = Simulator.Arena(copy=gme)
+        if game.nextTurn(ID, action) != 'd':
+            return game
+        else:
+            return 'd'
+
+    # ................................................................................................
