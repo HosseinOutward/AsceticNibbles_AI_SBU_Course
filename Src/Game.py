@@ -16,16 +16,6 @@ def askForAction(x, playerID, arena, gui,ai):
 
     return gui.getAction()
 
-
-def saveGames(arena, ai, num):
-    dill.dump(arena, file=open("SavedStates/"+str(num)+"-Arena.pickle", "wb"))
-    dill.dump(ai, file=open("SavedStates/"+str(num)+"-Q_AI.pickle", "wb"))
-
-
-def savePattern(pattern, num):
-    dill.dump(pattern, file=open("Patterns/" + str(num) + ".pickle", "wb"))
-
-
 def getInit(a):
     ai=0
     if a == 'L':
@@ -33,9 +23,10 @@ def getInit(a):
         arena = dill.load(open("SavedStates/"+n+"-Arena.pickle", "rb"))
         ai = dill.load(open("SavedStates/"+n+"-Q_AI.pickle", "rb"))
 
-        #needs other input
+        #needs more input***
         cubeSize=30
         g = Simulator.Arena(len(arena.foodGrid), len(arena.foodGrid[0]), True, 1, 5, 10, 200, 2, ["Q_agent1", "MinMax1", "Q_agent2", "MinMax2"], ["Q-LEARNING", "MINMAX", "Q-LEARNING", "MINMAX"], True)
+        #***
 
         arena.copyPlayers(g)
         gui = GUI.Graphics(len(arena.foodGrid), len(arena.foodGrid[0]), cubeSize, arena)
@@ -64,9 +55,9 @@ def getInit(a):
         PlayerNames, PlayersType = [], []
         for i in range(numP*numT):
             PlayerNames.append(str(input("name of player from team " + (i%numT+1) + ": ")))
-            PlayersType.append(str(input("whats Type of" + PlayerNames[i] + "(type EXACTLY: IDS, MinMax, RBFS, Q-learning (will load from file) or Human )")).upper())
+            PlayersType.append(str(input("whats Type of" + PlayerNames[i] + "(type EXACTLY: IDS, MinMax, RBFS, Q-learning (will need training) or Human )")).upper())
             if PlayersType[-1] is "Q-LEARNING":
-                ai = dill.load(open("Q_AI.pickle", "rb"))
+                ai=True
 
         winScore = int(input("Score to Win "))
         trnCost = float(input("Turning Penalty "))
@@ -75,12 +66,21 @@ def getInit(a):
         arena = Simulator.Arena(width, height, consumeMode, trnCost, fScoreAdd, fScoreMulti, winScore, numT, PlayerNames, PlayersType, stochastic)
         gui = GUI.Graphics(width, height, cubeSize, arena)
 
-        if str(input("save this World? Y/N")).upper() is 'Y': dill.dump(arena, file = open("arena.pickle", "wb"))
+        if ai==True:
+            ai=AI.AI_Q_LEARNING()
+            ai.train(arena, 20000)
+
+        if str(input("save this World? Y/N")).upper() is 'Y':
+            dill.dump(arena, file = open("arena.pickle", "wb"))
+            if ai is AI.AI_Q_LEARNING:
+                dill.dump(ai, file=open("Q_AI.pickle", "wb"))
+
 
     elif a == 'P':
-        #needs other input
+        #needs more input***
         cubeSize=30
         arena = Simulator.Arena(8, 8, True, 1, 5, 10, 200, 2, ["Q_agent1", "MinMax1", "Q_agent2", "MinMax2"], ["Q-LEARNING", "MINMAX", "Q-LEARNING", "MINMAX"], True)
+        #***
 
         n=str(input("Pattern Number: "))
         pattern=dill.load(open("Patterns/"+n+".pickle", "rb"))
@@ -92,7 +92,20 @@ def getInit(a):
         gui = GUI.Graphics(10, 5, 30, arena)
         ai=AI.AI_Q_LEARNING()
         ai.train(arena, 20000)
-        saveGames(arena, ai, 7)
+
+        #dill.dump(arena, file=open("SavedStates/"+str(7)+"-Arena.pickle", "wb"))
+        #dill.dump(ai, file=open("SavedStates/"+str(7)+"-Q_AI.pickle", "wb"))
+
+        #a=[[1,3,5,7,9,7,5,3,1],
+        #   [1,3,5,7,9,7,5,3,1],
+        #   [1,3,5,7,9,7,5,3,1],
+        #   [1,3,5,7,9,7,5,3,1],
+        #   [1,3,5,7,9,7,5,3,1],
+        #   [1,3,5,7,9,7,5,3,1],
+        #   [1,3,5,7,9,7,5,3,1],
+        #   [1,3,5,7,9,7,5,3,1],
+        #   [1,3,5,7,9,7,5,3,1]]
+        # dill.dump(pattern, file=open("Patterns/" + str(6) + ".pickle", "wb"))
 
     return arena, gui, ai
 # ..................................................................
@@ -127,14 +140,3 @@ def main():
 # ..................................................................
 
 main()
-
-#a=[[1,3,5,7,9,7,5,3,1],
-#   [1,3,5,7,9,7,5,3,1],
-#   [1,3,5,7,9,7,5,3,1],
-#   [1,3,5,7,9,7,5,3,1],
-#   [1,3,5,7,9,7,5,3,1],
-#   [1,3,5,7,9,7,5,3,1],
-#   [1,3,5,7,9,7,5,3,1],
-#   [1,3,5,7,9,7,5,3,1],
-#   [1,3,5,7,9,7,5,3,1]]
-#savePattern(a, 6)
