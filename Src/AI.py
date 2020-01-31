@@ -162,7 +162,7 @@ class AI_Alpha_Beta:
         game = Simulator.Arena(copy=gme)
         game.players[ID].name=True
         self.winScore=game.winScore
-        eval , dir= self.minimax(ID, ID, game, depth, 10000, -10000)
+        eval , dir= self.minimax(ID, ID, game, depth, 100000, -100000)
         return dir
 
     def minimax(self, curID, mainID, game, depth, alpha, beta):
@@ -170,9 +170,17 @@ class AI_Alpha_Beta:
         for i, snake in enumerate(game.players):
             if snake.name==True:
                 mainID=i
-
-        if depth == 0 or game.getTeamScore(curID) >= self.winScore:
+        
+        if game.getTeamScore(curID) >= self.winScore:
+            if game.players[curID].team == game.players[mainID].team:
+                return 100000, -1
+            else:
+                return -100000, -1
+        
+        if depth == 0:
             return self.statEval(mainID, game), -1
+                
+                
 
         successors = []
         r = list(range(0,4))
@@ -183,7 +191,10 @@ class AI_Alpha_Beta:
                 successors.append(nextNode)
 
         if len(successors)==0:
-            return -100000, -1
+            if game.players[curID].team == game.players[mainID].team:
+                return -100000, -1
+            else:
+                return 100000, -1
 
         if game.players[curID].team == game.players[mainID].team:
             maxEval = -100000
