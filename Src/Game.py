@@ -123,11 +123,12 @@ def main():
             winner = arena.nextTurn(playerID, action)
             gui.redrawPage(arena)
             gui.drawScores(arena)
-            gui.drawText(str(snake.name) + " (of team " + str(alphabeta[snake.team]).upper() + ") individual Score is: " + str(snake.foodScore), snake.color, 1000)
             if winner == 'd':
                 winner = False
             elif winner:
                 break
+            else:
+                gui.drawText(str(snake.name) + " (of team " + str(alphabeta[snake.team]).upper() + ") individual Score is: " + str(snake.foodScore), snake.color, 1000)
             playerID += 1
 
     if winner:
