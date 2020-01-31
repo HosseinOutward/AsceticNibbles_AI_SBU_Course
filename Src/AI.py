@@ -203,7 +203,7 @@ class AI_Alpha_Beta:
                 maxEval = max(maxEval, eval)
                 if eval == maxEval:
                     dir = child[1]
-                alpha = max(alpha, eval)
+                alpha = max(alpha, maxeval)
                 if beta <= alpha:
                     break
             return maxEval, dir
@@ -214,7 +214,7 @@ class AI_Alpha_Beta:
                 minEval = min(minEval, eval)
                 if eval == minEval:
                     dir = child[1]
-                beta = min(beta, eval)
+                beta = min(beta, mineval)
                 if beta <= alpha:
                     break
             return minEval, dir
